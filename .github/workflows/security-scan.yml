@@ -18,3 +18,4 @@ jobs:
         with:
           scan-path: "."
           fail-on-grade: "C"
+          groq-api-key: ${{ secrets.GROQ_API_KEY }}
