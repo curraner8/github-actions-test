@@ -1,0 +1,20 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run vulnerability scan
+        uses: your-github-username/FYP@feature/github-action
+        with:
+          scan-path: "."
+          fail-on-grade: "C"
