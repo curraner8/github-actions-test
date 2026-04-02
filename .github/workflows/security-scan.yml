@@ -24,10 +24,6 @@ jobs:
           fail-on-grade: "C"
           groq-api-key: ${{ secrets.GROQ_API_KEY }}
 
-      - name: Save report to file
-        if: always() && github.event_name == 'pull_request'
-        run: echo '${{ steps.scan.outputs.report }}' > scan-report.json
-
       - name: Post PR comment
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
