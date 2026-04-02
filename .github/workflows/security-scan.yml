@@ -33,57 +33,18 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-
             const score = '${{ steps.scan.outputs.score }}';
             const grade = '${{ steps.scan.outputs.grade }}';
             const passed = ['A', 'B'].includes(grade);
             const status = passed ? '-->PASSED<--' : '-->FAILED<--';
 
-            let report = null;
-            try {
-              const raw = fs.readFileSync('scan-report.json', 'utf8');
-              report = JSON.parse(raw)
-            } catch (e) {
-              console.log('Could not parse report: ', e);
-            }
-
-            let body = `## Security Scan Results\n\n`;
-            body += `| Status | Score | Grade |\n`;
-            body += `|--------|-------|-------|\n`;
-            body += `| ${status} | ${score}/100 | ${grade} |\n\n`;
-
-            if (report && report.files && report.files.length > 0) {
-              const bd = report.summary.score_breakdown;
-              body += `### Score Breakdown\n\n`;
-              body += `| Critical | High | Medium | Low |\n`;
-              body += `|---------|------|-------|-----|\n`;
-              body += `| ${Math.abs(bd.critical)} | ${Math.abs(bd.high)} | ${Math.abs(bd.medium)} | ${Math.abs(bd.low)} |\n\n`;
-
-              body += `### Findings by File\n\n`;
-
-              for (const file of report.files) {
-                body += `<details>\n<summary><b>${file.file}</b> - ${file.findings.length} finding(s)</summary>\n\n`;
-                body += `| Line | Severity | Type | Description |\n`;
-                body += `|------|---------|------|------------|\n`;
-                for (const finding of file.findings) {
-                  body += `| ${finding.line} | ${finding.severity} | ${finding.type} | ${finding.description} |\n`;
-                }
-
-                body += `\n**Recommendations**\n\n`;
-                for (const finding of file.findings) {
-                  body += `**${finding.type}** (Line ${finding.line}): ${finding.recommendation}\n`;
-                  if (finding.llm_fix) {
-                    body += `**AI Fix Recommendation:** ${finding.llm_fix}\n\n`;
-                    body += `**AI Explanation:** ${finding.llm_explanation}\n`;
-                  }
-                }
-
-                body += `</details>\n\n`;
-              }
-            } else {
-              body += ` NO VULNERABILITIES FOUND -> well done\n`
-            }
+            const body = [
+              ``,
+              `| Status | Score | Grade |`,
+              `|--------|-------|-------|`,
+              `| ${status} | ${score}/100 | ${grade} |`,
+              ``,
+              ].join('\n');
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
