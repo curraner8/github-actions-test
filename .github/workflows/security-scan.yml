@@ -24,36 +24,41 @@ jobs:
           fail-on-grade: "C"
           groq-api-key: ${{ secrets.GROQ_API_KEY }}
 
+      - name: Save report to file
+        if: always() && github.event_name == 'pull_request'
+        run: echo '${{ steps.scan.outputs.report }}' > scan-report.json
+
       - name: Post PR comment
         if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs');
+
             const score = '${{ steps.scan.outputs.score }}';
             const grade = '${{ steps.scan.outputs.grade }}';
             const passed = ['A', 'B'].includes(grade);
             const status = passed ? '-->PASSED<--' : '-->FAILED<--';
 
-            let report;
+            let report = null;
             try {
-              report = JSON.parse('${{ steps.scan.outputs.report }}');
+              const raw = fs.readFileSync('scan-report.json', 'utf8');
+              report = JSON.parse(raw)
             } catch (e) {
-              report = null;
+              console.log('Could not parse report: ', e);
             }
 
-            const body = [
-              ``,
-              `| Status | Score | Grade |`,
-              `|--------|-------|-------|`,
-              `| ${status} | ${score}/100 | ${grade} |`,
-              ``,
-              ].join('\n');
+            let body = `## Security Scan Results\n\n`;
+            body += `| Status | Score | Grade |\n`;
+            body += `|--------|-------|-------|\n`;
+            body += `| ${status} | ${score}/100 | ${grade} |\n\n`;
 
             if (report && report.files && report.files.length > 0) {
+              const bd = report.summary.score_breakdown;
               body += `### Score Breakdown\n\n`;
               body += `| Critical | High | Medium | Low |\n`;
               body += `|---------|------|-------|-----|\n`;
-              body += `| ${Math.abs(report.summary.score_breakdown.critical)} | ${Math.abs(report.summary.score_breakdown.high)} | ${Math.abs(report.summary.score_breakdown.medium)} | ${Math.abs(report.summary.score_breakdown.low)} |\n\n`;
+              body += `| ${Math.abs(bd.critical)} | ${Math.abs(bd.high)} | ${Math.abs(bd.medium)} | ${Math.abs(bd.low)} |\n\n`;
 
               body += `### Findings by File\n\n`;
 
