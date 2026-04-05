@@ -18,7 +18,7 @@ jobs:
 
       - name: Run vulnerability scan
         id: scan
-        uses: curraner8/FYP@feature/action-refine
+        uses: curraner8/FYP@main
         with:
           scan-path: "."
           fail-on-grade: "C"
