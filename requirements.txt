@@ -1,0 +1,17 @@
+# Vulnerable packages
+requests==2.25.0
+django==3.1.0
+flask==1.1.2
+
+# Unpinned packages (will trigger E1 warnings)
+numpy
+pandas
+
+# Pinned but safe versions
+certifi==2024.12.23
+
+# Complex version (will be skipped)
+click>=7.0
+
+# Dev dependencies (still checked)
+pytest==6.2.5
